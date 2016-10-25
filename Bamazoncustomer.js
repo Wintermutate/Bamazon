@@ -16,10 +16,6 @@ connection.connect(function(err){
 
 var runApp = function(){
 	displayProducts();
-// 	inquirer.prompt({
-// 		name: "action",
-// 		message: "Which product would you like to buy?"
-// 	})
 }
 
 var displayProducts = function(){
@@ -38,8 +34,33 @@ var displayProducts = function(){
 			},
 			message: "Which item would you like to buy?"
 		}).then(function(answer){
-			
-		}
+			for (var i =0; i < res.length; i++){
+				if (res[i].ProductName == answer.choice){
+					var chosenItem = res[i];
+					inquirer.prompt({
+						name: "amount",
+						type: "input",
+						message: "How many units would you like to buy?"
+					}).then(function(answer){
+					console.log(chosenItem);
+											
+						if (chosenItem.StockQuantity < parseInt(answer.amount)){
+							console.log("Insufficient Quantity");
+							runApp();
+						} else {
+							var chosenQuantity = chosenItem.StockQuantity - parseInt(answer.amount);
+							connection.query("UPDATE products SET ? WHERE ?", [{
+								StockQuantity: chosenQuantity
+							},{
+								ItemID:chosenItem.ItemID
+							}], function(err, res){
+								console.log("Items purchased!");
+								runApp();
+							})
+						}
+					})
+				}
+			}
+		})	
 	})
-
 }
