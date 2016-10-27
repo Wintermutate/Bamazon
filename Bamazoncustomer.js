@@ -21,7 +21,9 @@ var runApp = function(){
 var displayProducts = function(){
 	connection.query('SELECT * FROM products', function(err, res){
 		if (err) throw err;
-		console.log(res);
+		for (var i = 0; i < res.length; i++){
+			console.log("ItemID: " + res[i].ItemID + " || Product: " + res[i].ProductName + " || Department: " + res[i].DepartmentName + " || Price: " + res[i].Price + " || Quantity: " + res[i].StockQuantity);
+		}	
 		inquirer.prompt({
 			name: "choice",
 			type: "rawlist",
@@ -40,7 +42,14 @@ var displayProducts = function(){
 					inquirer.prompt({
 						name: "amount",
 						type: "input",
-						message: "How many units would you like to buy?"
+						message: "How many units would you like to buy?",
+						validate: function(value){
+							if (isNaN(value) == false) {
+                				return true;
+            				} else {
+                				return false;
+            				}
+						}
 					}).then(function(answer){
 					console.log(chosenItem);
 											
@@ -49,12 +58,13 @@ var displayProducts = function(){
 							runApp();
 						} else {
 							var chosenQuantity = chosenItem.StockQuantity - parseInt(answer.amount);
+							var totalCost = chosenItem.Price * parseInt(answer.amount);
 							connection.query("UPDATE products SET ? WHERE ?", [{
 								StockQuantity: chosenQuantity
 							},{
 								ItemID:chosenItem.ItemID
 							}], function(err, res){
-								console.log("Items purchased!");
+								console.log("Your total cost is : $" + totalCost);
 								runApp();
 							})
 						}
